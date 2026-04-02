@@ -72,6 +72,8 @@ actions!(
         OpenPerformanceProfiler,
         /// Opens the onboarding view.
         OpenOnboarding,
+        /// Opens Zed in Quev Canvas mode.
+        OpenCanvasMode,
     ]
 );
 

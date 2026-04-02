@@ -13573,6 +13573,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "quev_canvas"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "gpui",
+ "workspace",
+]
+
+[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -21997,6 +22006,7 @@ dependencies = [
  "project_symbols",
  "prompt_store",
  "proto",
+ "quev_canvas",
  "rayon",
  "recent_projects",
  "release_channel",

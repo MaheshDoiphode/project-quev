@@ -96,8 +96,8 @@ use workspace::{
 };
 use workspace::{Pane, notifications::DetachAndPromptErr};
 use zed_actions::{
-    OpenAccountSettings, OpenBrowser, OpenDocs, OpenServerSettings, OpenSettingsFile, OpenZedUrl,
-    Quit,
+    OpenAccountSettings, OpenBrowser, OpenCanvasMode, OpenDocs, OpenServerSettings,
+    OpenSettingsFile, OpenZedUrl, Quit,
 };
 
 actions!(
@@ -780,6 +780,12 @@ fn register_actions(
         .register_action(|_, action: &OpenZedUrl, _, cx| {
             OpenListener::global(cx).open(RawOpenRequest {
                 urls: vec![action.url.clone()],
+                ..Default::default()
+            })
+        })
+        .register_action(|_, _: &OpenCanvasMode, _, cx| {
+            OpenListener::global(cx).open(RawOpenRequest {
+                urls: vec!["zed://canvas".to_string()],
                 ..Default::default()
             })
         })

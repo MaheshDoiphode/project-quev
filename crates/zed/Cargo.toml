@@ -13,6 +13,7 @@ workspace = true
 
 [features]
 tracy = ["ztracing/tracy"]
+quev-canvas = ["dep:quev_canvas"]
 # LEAK_BACKTRACE=1 cargo run --features zed/track-project-leak --profile release-fast
 track-project-leak = ["gpui/leak-detection"]
 test-support = [
@@ -220,6 +221,7 @@ web_search_providers.workspace = true
 which_key.workspace = true
 workspace.workspace = true
 zed_actions.workspace = true
+quev_canvas = { workspace = true, optional = true }
 zed_env_vars.workspace = true
 zlog.workspace = true
 zlog_settings.workspace = true

@@ -70,6 +70,7 @@ pub enum OpenRequestKind {
     GitCommit {
         sha: String,
     },
+    CanvasMode,
 }
 
 impl OpenRequest {
@@ -131,6 +132,8 @@ impl OpenRequest {
                 this.kind = Some(OpenRequestKind::Setting {
                     setting_path: Some(setting_path.to_string()),
                 });
+            } else if url == "zed://canvas" || url == "zed://canvas/" {
+                this.kind = Some(OpenRequestKind::CanvasMode);
             } else if let Some(clone_path) = url.strip_prefix("zed://git/clone") {
                 this.parse_git_clone_url(clone_path)?
             } else if let Some(commit_path) = url.strip_prefix("zed://git/commit/") {
@@ -1381,6 +1384,23 @@ mod tests {
             }
             _ => panic!("Expected GitClone kind"),
         }
+    }
+
+    #[gpui::test]
+    fn test_parse_canvas_url(cx: &mut TestAppContext) {
+        let _app_state = init_test(cx);
+        let request = cx.update(|cx| {
+            OpenRequest::parse(
+                RawOpenRequest {
+                    urls: vec!["zed://canvas".into()],
+                    ..Default::default()
+                },
+                cx,
+            )
+            .unwrap()
+        });
+
+        assert!(matches!(request.kind, Some(OpenRequestKind::CanvasMode)));
     }
 
     #[gpui::test]

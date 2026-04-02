@@ -56,7 +56,7 @@ use theme_settings::load_user_theme;
 use util::{ResultExt, TryFutureExt, maybe};
 use uuid::Uuid;
 use workspace::{
-    AppState, MultiWorkspace, SerializedWorkspaceLocation, SessionWorkspace, Toast,
+    AppState, IdeMode, MultiWorkspace, SerializedWorkspaceLocation, SessionWorkspace, Toast,
     WorkspaceSettings, WorkspaceStore, notifications::NotificationId, restore_multiworkspace,
 };
 use zed::{
@@ -67,6 +67,9 @@ use zed::{
 };
 
 use crate::zed::{OpenRequestKind, eager_load_active_theme_and_icon_theme};
+
+#[cfg(feature = "quev-canvas")]
+use quev_canvas::open_canvas_mode;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
@@ -1106,6 +1109,27 @@ fn handle_open_request(request: OpenRequest, app_state: Arc<AppState>, cx: &mut 
                 })
                 .detach_and_log_err(cx);
             }
+            OpenRequestKind::CanvasMode => {
+                #[cfg(feature = "quev-canvas")]
+                {
+                    cx.spawn(async move |cx| open_canvas_mode(app_state, cx.clone()).await)
+                        .detach_and_log_err(cx);
+                }
+                #[cfg(not(feature = "quev-canvas"))]
+                {
+                    workspace::with_active_or_new_workspace(cx, |workspace, _, cx| {
+                        struct QuevCanvasModeDisabled;
+                        workspace.show_toast(
+                            Toast::new(
+                                NotificationId::unique::<QuevCanvasModeDisabled>(),
+                                "Quev Canvas mode is disabled in this build.",
+                            )
+                            .autohide(),
+                            cx,
+                        );
+                    });
+                }
+            }
             OpenRequestKind::GitClone { repo_url } => {
                 workspace::with_active_or_new_workspace(cx, |_workspace, window, cx| {
                     if window.is_window_active() {
@@ -1459,6 +1483,33 @@ pub(crate) async fn restore_or_create_workspace(
     } else if matches!(kvp.read_kvp(FIRST_OPEN), Ok(None)) {
         cx.update(|cx| show_onboarding_view(app_state, cx)).await?;
     } else {
+        let ide_mode = cx.update(|cx| WorkspaceSettings::get_global(cx).ide_mode);
+        if matches!(ide_mode, IdeMode::Canvas) {
+            #[cfg(feature = "quev-canvas")]
+            {
+                open_canvas_mode(app_state, cx.clone()).await?;
+                return Ok(());
+            }
+            #[cfg(not(feature = "quev-canvas"))]
+            {
+                cx.update(|cx| {
+                    workspace::open_new(Default::default(), app_state.clone(), cx, |workspace, _, cx| {
+                        struct QuevCanvasModeDisabled;
+                        workspace.show_toast(
+                            Toast::new(
+                                NotificationId::unique::<QuevCanvasModeDisabled>(),
+                                "Settings requested canvas mode, but this build has it disabled.",
+                            )
+                            .autohide(),
+                            cx,
+                        );
+                    })
+                })
+                .await?;
+                return Ok(());
+            }
+        }
+
         cx.update(|cx| {
             workspace::open_new(
                 Default::default(),
