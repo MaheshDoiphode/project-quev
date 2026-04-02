@@ -229,7 +229,7 @@ fn general_page() -> SettingsPage {
         ]
     }
 
-    fn workspace_restoration_section() -> [SettingsPageItem; 3] {
+    fn workspace_restoration_section() -> [SettingsPageItem; 4] {
         [
             SettingsPageItem::SectionHeader("Workspace Restoration"),
             SettingsPageItem::SettingItem(SettingItem {
@@ -261,6 +261,20 @@ fn general_page() -> SettingsPage {
                     pick: |settings_content| settings_content.workspace.restore_on_startup.as_ref(),
                     write: |settings_content, value| {
                         settings_content.workspace.restore_on_startup = value;
+                    },
+                }),
+                metadata: None,
+                files: USER,
+            }),
+            SettingsPageItem::SettingItem(SettingItem {
+                title: "IDE Mode",
+                description:
+                    "Choose the startup shell. Text opens the standard editor and Canvas opens the Quev canvas shell.",
+                field: Box::new(SettingField {
+                    json_path: Some("ide_mode"),
+                    pick: |settings_content| settings_content.workspace.ide_mode.as_ref(),
+                    write: |settings_content, value| {
+                        settings_content.workspace.ide_mode = value;
                     },
                 }),
                 metadata: None,

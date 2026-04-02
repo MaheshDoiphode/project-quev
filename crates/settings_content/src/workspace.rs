@@ -49,6 +49,10 @@ pub struct WorkspaceSettingsContent {
     /// Values: empty_tab, last_workspace, last_session, launchpad
     /// Default: last_session
     pub restore_on_startup: Option<RestoreOnStartupBehavior>,
+    /// Startup mode for the IDE shell.
+    /// Values: text, canvas
+    /// Default: text
+    pub ide_mode: Option<IdeMode>,
     /// Whether to attempt to restore previous file's state when opening it again.
     /// The state is stored per pane.
     /// When disabled, defaults are applied instead of the state restoration.
@@ -340,6 +344,27 @@ pub enum WindowDecorations {
     Client,
     /// Show system's window titlebar (server-side decoration; not supported by GNOME Wayland)
     Server,
+}
+
+#[derive(
+    Copy,
+    Clone,
+    PartialEq,
+    Eq,
+    Default,
+    Serialize,
+    Deserialize,
+    JsonSchema,
+    MergeFrom,
+    Debug,
+    strum::VariantArray,
+    strum::VariantNames,
+)]
+#[serde(rename_all = "snake_case")]
+pub enum IdeMode {
+    #[default]
+    Text,
+    Canvas,
 }
 
 #[derive(
